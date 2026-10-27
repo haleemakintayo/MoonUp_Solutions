@@ -114,9 +114,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // 5. Contact Form Submission via FastAPI Backend
+  // 5. Contact Form Submission (Hybrid: Web3Forms for GitHub Pages / FastAPI for Local Dev)
   const contactForm = document.getElementById("contactForm");
   const formAlert = document.getElementById("formAlert");
+
+  const FORM_CONFIG = {
+    web3FormsKey: "d0356dc1-8c7a-427b-a251-95ba0f42dade"
+  };
 
   if (contactForm && formAlert) {
     contactForm.addEventListener("submit", async (e) => {
@@ -160,22 +164,61 @@ document.addEventListener("DOMContentLoaded", () => {
         submitBtn.textContent = "Submitting...";
       }
 
-      const payload = {
-        full_name: fullName,
-        email: email,
-        organization: organization,
-        service_needed: serviceNeeded || "General Inquiry",
-        message: message
-      };
+      // Check if running on local FastAPI server (http://localhost:8000 or http://127.0.0.1:8000)
+      const isLocalFastAPI =
+        (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") &&
+        window.location.port === "8000";
 
+      if (isLocalFastAPI) {
+        try {
+          const response = await fetch("/api/inquiries", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            },
+            body: JSON.stringify({
+              full_name: fullName,
+              email: email,
+              organization: organization,
+              service_needed: serviceNeeded || "General Inquiry",
+              message: message
+            })
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            showAlert(
+              "success",
+              `<strong>Thank you, ${escapeHtml(fullName)}!</strong> Your inquiry (#${data.inquiry_id}) has been received. Our team will review your requirements and respond within 24 business hours.`
+            );
+            contactForm.reset();
+            return;
+          }
+        } catch (localErr) {
+          console.log("Local FastAPI endpoint not reachable, dispatching via Web3Forms gateway...", localErr);
+        }
+      }
+
+      // Production & GitHub Pages: Web3Forms Email Gateway
       try {
-        const response = await fetch("/api/inquiries", {
+        const response = await fetch("https://api.web3forms.com/submit", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Accept": "application/json"
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({
+            access_key: FORM_CONFIG.web3FormsKey,
+            subject: `New MoonUp Solutions Inquiry: ${fullName} (${serviceNeeded || "General"})`,
+            from_name: "MoonUp Solutions Website",
+            name: fullName,
+            email: email,
+            organization: organization || "N/A",
+            service: serviceNeeded || "General Inquiry",
+            message: message
+          })
         });
 
         const data = await response.json();
@@ -183,25 +226,20 @@ document.addEventListener("DOMContentLoaded", () => {
         if (response.ok && data.success) {
           showAlert(
             "success",
-            `<strong>Thank you, ${escapeHtml(fullName)}!</strong> Your inquiry (#${data.inquiry_id}) has been received. Our team will review your requirements and respond within 24 business hours.`
+            `<strong>Thank you, ${escapeHtml(fullName)}!</strong> Your inquiry has been received. Our team will review your requirements and respond within 24 business hours.`
           );
           contactForm.reset();
-        } else if (response.status === 422) {
-          const details = Array.isArray(data.detail)
-            ? data.detail.map((d) => d.msg).join(", ")
-            : "Invalid submission data.";
-          showAlert("error", `Validation Error: ${details}`);
         } else {
           showAlert(
             "error",
-            data.message || data.detail || "Unable to submit inquiry at this moment. Please try again."
+            data.message || "Unable to submit inquiry at this moment. Please email inquiries@moonupsolutions.com directly."
           );
         }
       } catch (err) {
-        console.warn("Backend error:", err);
+        console.warn("Submission error:", err);
         showAlert(
           "error",
-          "Could not connect to the backend server. Please verify the FastAPI server is running with <code>python app.py</code>."
+          "Could not send inquiry. Please check your internet connection or email us at <a href='mailto:inquiries@moonupsolutions.com'>inquiries@moonupsolutions.com</a>."
         );
       } finally {
         if (submitBtn) {

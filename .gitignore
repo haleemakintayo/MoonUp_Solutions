@@ -1,0 +1,46 @@
+# Database & local data
+inquiries.db
+inquiries.db-journal
+*.sqlite3
+
+# Environment variables & secrets
+.env
+.env.local
+.env.*.local
+
+# Python caches & build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyd
+*.so
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE & OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
