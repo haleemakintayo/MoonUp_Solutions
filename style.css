@@ -302,13 +302,43 @@ a {
 
 .menu-toggle {
   display: none;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  padding: 8px 12px;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
   border-radius: 8px;
-  cursor: pointer;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
   color: var(--text-primary);
-  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.menu-toggle:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--border-hover);
+}
+
+.menu-toggle svg {
+  stroke: currentColor;
+}
+
+.menu-toggle .icon-close {
+  display: none;
+}
+
+.menu-toggle[aria-expanded="true"] .icon-bars {
+  display: none;
+}
+
+.menu-toggle[aria-expanded="true"] .icon-close {
+  display: block;
+}
+
+.mobile-nav-cta {
+  display: none;
 }
 
 /* Buttons */
@@ -1031,7 +1061,15 @@ footer .brand-mark:before {
 
 @media (max-width: 860px) {
   .menu-toggle {
-    display: block;
+    display: inline-flex;
+  }
+
+  .nav-actions .nav-cta {
+    display: none;
+  }
+
+  .brand-tag {
+    display: none;
   }
 
   .nav-links {
@@ -1042,22 +1080,83 @@ footer .brand-mark:before {
     right: 0;
     background: var(--bg-surface);
     flex-direction: column;
-    padding: 24px;
-    gap: 16px;
+    padding: 18px 20px 24px;
+    gap: 6px;
     border-bottom: 1px solid var(--border-subtle);
     box-shadow: var(--shadow-lg);
+    max-height: calc(100vh - 68px);
+    overflow-y: auto;
   }
 
   .nav-links.open {
     display: flex;
+    animation: navSlideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .nav-links a {
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: block;
+    width: 100%;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .nav-links a:hover {
+    background: var(--bg-surface-hover);
+    color: var(--text-primary);
+  }
+
+  .nav-links a.active {
+    background: var(--brand-subtle);
+    color: var(--brand-primary);
   }
 
   .nav-links a.active::after {
     display: none;
   }
 
+  .mobile-nav-cta {
+    display: block;
+    margin-top: 8px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-subtle);
+  }
+
   .contact-layout, .grid3, .grid2, .feature-box {
     grid-template-columns: 1fr;
+  }
+}
+
+@keyframes navSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-name {
+    font-size: 1.05rem;
+  }
+
+  .brand-mark {
+    width: 32px;
+    height: 32px;
+  }
+
+  .navin {
+    gap: 12px;
+  }
+
+  .nav-actions {
+    gap: 8px;
   }
 }
 
